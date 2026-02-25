@@ -23,7 +23,8 @@ AI（Cursor）はこのファイルと AGENTS.md のガードレールを**必�
 
 ## 現在の実装状況
 
-- **Worker**: デプロイ済み  
+- **GitHub**: リポジトリを保存。デプロイ名は **my-worker**。GitHub から Cloudflare へ自動デプロイ済み
+- **Cloudflare Worker**: 名前は **worker**。デプロイ済み  
   `https://worker.mituo0226.workers.dev/api/chat`
 - **コード構成（責務分離済み）**
   - `src/index.js` — ルーティング（薄い層）
@@ -31,14 +32,37 @@ AI（Cursor）はこのファイルと AGENTS.md のガードレールを**必�
   - `src/lib/*` — AB割当、CORS/Response、AI呼び出し、messages構築
   - `src/personas/junya.js` — 人格プロンプト
 - **wrangler.jsonc**: `main` = `src/index.js`
-- **D1**: `ai_chat_db`
-  - uuid: `697e6ee8-22d8-42b4-982d-94f51660baac`
-  - binding: `DB`
-- **ローカル**: `wrangler dev` は起動するが、D1 にテーブルが無いと「no such table: ab_assignments」が出る
-- **必要なテーブル**: `ab_assignments` / `chat_messages` / `chat_runs`
 
 ---
 
-## 運用方針（確定後に追記）
+## D1 データベース
 
-- 編集 → dev 確認 → deploy、トラブル時の戻し方 など
+Cloudflare Worker に **D1 がバインド済み**。コード内では `env.DB` でアクセスする。
+
+| 項目 | 値 |
+|------|-----|
+| **データベース名** | `ai_chat_db` |
+| **database_id（UUID）** | `697e6ee8-22d8-42b4-982d-94f51660baac` |
+| **バインディング** | `DB`（`env.DB`） |
+| **設定箇所** | `wrangler.jsonc` の `d1_databases` |
+
+**必要なテーブル**: `ab_assignments` / `chat_messages` / `chat_runs`  
+スキーマ定義は `schema/001_initial.sql`、説明は `schema/README.md` を参照。
+
+**ローカル**: `wrangler dev` 使用時は、事前に `npx wrangler d1 execute ai_chat_db --local --file=./schema/001_initial.sql` でテーブル作成が必要（未作成だと「no such table: ab_assignments」が出る）。
+
+---
+
+## 外部サイトへの埋め込み
+
+- フロントコードは **body 以下から** 貼り付ける形式（完全な HTML の形ではなく可）
+- 外部サイトのフリーページに貼り付けてチャットを表示する
+- 詳細・貼り付け用コードは **`docs/EXTERNAL_EMBED.md`** を参照
+
+---
+
+## 運用方針
+
+- **編集 → dev 確認 → deploy**。テストは本番 URL から行う
+- **フロントコード**: バックアップ用に常に同期しておく
+- **デプロイ**: GitHub の自動デプロイ、またはローカルから `npx wrangler deploy`

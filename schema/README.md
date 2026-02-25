@@ -1,5 +1,6 @@
 # D1 スキーマ（コードから導出）
 
+**データベース名**: `ai_chat_db`（バインディング: `env.DB`）  
 このディレクトリは **ローカルコード（`src/handlers/chat.js`, `src/lib/ab.js`）の SQL 参照から導出した** D1 テーブル定義です。Cloudflare ダッシュボードで既に作成済みのテーブルと整合を取るための参照用です。
 
 ## テーブル一覧
@@ -36,14 +37,14 @@
 `wrangler.jsonc` に D1 バインディングを追加した上で:
 
 ```bash
-# ローカル DB にスキーマ適用
-npx wrangler d1 execute <DB_NAME> --local --file=./schema/001_initial.sql
+# ローカル DB にスキーマ適用（DB名: ai_chat_db）
+npx wrangler d1 execute ai_chat_db --local --file=./schema/001_initial.sql
 ```
 
 本番に新規作成する場合（既存データがない場合のみ）:
 
 ```bash
-npx wrangler d1 execute <DB_NAME> --remote --file=./schema/001_initial.sql
+npx wrangler d1 execute ai_chat_db --remote --file=./schema/001_initial.sql
 ```
 
 **注意:** 既存の本番 D1 に `001_initial.sql` をそのまま流すと、既にテーブルがある場合は `CREATE TABLE IF NOT EXISTS` によりスキーマのみが揃い、データは残ります。新規カラムを追加する場合は別マイグレーションファイルを用意してください。
