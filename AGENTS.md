@@ -1,5 +1,7 @@
 # Cloudflare Workers
 
+**このプロジェクトのガードレール**: 必ず `PROJECT.md` を参照し守ること。勝手にコミット・デプロイしない。変更は最小限。設定の全文差し替え禁止。削除前は必ず確認。流れは「現状診断 → 提案 → OK → 実装」。
+
 STOP. Your knowledge of Cloudflare Workers APIs and limits may be outdated. Always retrieve current documentation before any Workers, KV, R2, D1, Durable Objects, Queues, Vectorize, AI, or Agents SDK task.
 
 ## Docs
