@@ -125,7 +125,20 @@
     if (e.key === "Enter") send();
   });
 
-  addLine("assistant", "これからはこのチャットで話そうね、返信してみてくれないかなよろしく");
+  (async function showGreeting() {
+    const GREETING_URL = API_URL.replace("/chat", "/chat/greeting");
+    try {
+      const res = await fetch(GREETING_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ userId, nickname })
+      });
+      const data = await res.json().catch(() => ({}));
+      addLine("assistant", (data && data.greeting) || "これからはこのチャットで話そうね、返信してみてくれないかなよろしく");
+    } catch {
+      addLine("assistant", "これからはこのチャットで話そうね、返信してみてくれないかなよろしく");
+    }
+  })();
 
   dbgEl.textContent =
     "debug: script ok / API_URL=" + API_URL +

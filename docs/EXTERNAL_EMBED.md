@@ -18,9 +18,10 @@
 
 ## API の仕様（Worker 側）
 
-- **URL**: `POST https://worker.mituo0226.workers.dev/api/chat`
-- **Body (JSON)**: `{ userId: string, message: string, nickname?: string }`
-- **レスポンス**: `{ ok: boolean, reply?: string, ab?: {...}, ... }`
+- **チャット**: `POST /api/chat` — Body: `{ userId, message, nickname? }` → `{ ok, reply, ... }`
+- **初回挨拶**: `POST /api/chat/greeting` — Body: `{ userId, nickname? }` → `{ ok, greeting }`  
+  - 履歴なし: 静的挨拶を返す  
+  - 履歴あり: AI が過去会話を踏まえた挨拶を生成
 
 ## プレースホルダ
 
@@ -151,7 +152,20 @@
     if (e.key === "Enter") send();
   });
 
-  addLine("assistant", "これからはこのチャットで話そうね、返信してみてくれないかなよろしく");
+  (async function showGreeting() {
+    const GREETING_URL = API_URL.replace("/chat", "/chat/greeting");
+    try {
+      const res = await fetch(GREETING_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ userId, nickname })
+      });
+      const data = await res.json().catch(() => ({}));
+      addLine("assistant", (data && data.greeting) || "これからはこのチャットで話そうね、返信してみてくれないかなよろしく");
+    } catch {
+      addLine("assistant", "これからはこのチャットで話そうね、返信してみてくれないかなよろしく");
+    }
+  })();
 
   dbgEl.textContent =
     "debug: script ok / API_URL=" + API_URL +
