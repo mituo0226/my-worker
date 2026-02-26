@@ -1,39 +1,13 @@
-# 外部サイトへのチャット埋め込み
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>チャット埋め込み用（body以下をコピー）</title>
+</head>
+<body>
+<!-- ========== ここから下を外部サイトのフリーページに貼り付ける ========== -->
 
-このプロジェクトの Worker は、外部サイトのフリースペース（フリーページ）に埋め込むチャット用です。
-
-## 設置方法
-
-- **形式**: 完全な HTML ドキュメントではなく、**body 以下から** 貼り付ける形
-- **貼り付け先**: 外部サイトのフリーページに、以下を貼り付ける
-
-## 貼り付け用コードの構造
-
-1. **ルート要素**: `<div id="ai-chat-root"></div>` を配置
-2. **script 内**:
-   - `API_URL`: Worker のエンドポイント `https://worker.mituo0226.workers.dev/api/chat`
-   - `userId`: `[[UID]]` または localStorage / safeUUID で決定
-   - `nickname`: `[[UNAME]]` または `window.CURRENT_USERNAME`
-   - POST で `{ userId, nickname, message }` を JSON body として送信
-
-## API の仕様（Worker 側）
-
-- **URL**: `POST https://worker.mituo0226.workers.dev/api/chat`
-- **Body (JSON)**: `{ userId: string, message: string, nickname?: string }`
-- **レスポンス**: `{ ok: boolean, reply?: string, ab?: {...}, ... }`
-
-## プレースホルダ
-
-外部サイト側で置換される想定:
-
-- `[[UID]]` … 外部のユーザーID（あれば）
-- `[[UNAME]]` … 外部のユーザー名・ニックネーム（あれば）
-
-置換されない場合は localStorage や `window.CURRENT_USERNAME` などにフォールバック。
-
-## 貼り付け用コード（参考）
-
-```html
 <div id="ai-chat-root"></div>
 
 <script>
@@ -162,10 +136,7 @@
 
 })();
 </script>
-```
 
-## 備考
-
-- このコードは ChatGPT が作成。Worker 側（本プロジェクト）は Cursor でリファクタ・保守
-- **CORS**: Worker は `Access-Control-Allow-Origin: *` を返すため、どのドメインからでも呼び出し可能（URL による Origin 制限は廃止済み）
-- **テスト**: 本番環境のチャット画面から動作確認することを推奨
+<!-- ========== ここまで ========== -->
+</body>
+</html>
