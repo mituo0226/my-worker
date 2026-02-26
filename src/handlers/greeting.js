@@ -2,6 +2,7 @@ import { json } from "../lib/respond.js";
 import { getAB } from "../lib/ab.js";
 import { callProvider } from "../lib/providers.js";
 import { getSystemPrompt } from "../personas/junya.js";
+import { buildTimeContextTokyo } from "../lib/time.js";
 
 const STATIC_GREETING = "これからはこのチャットで話そうね、返信してみてくれないかなよろしく";
 
@@ -40,6 +41,7 @@ export async function handleGreeting(req, env) {
     ...history,
     { role: "user", content: "再訪への挨拶を1文で出力して。" },
   ];
+  messages.unshift({ role: "system", content: buildTimeContextTokyo() });
 
   try {
     const result = await callProvider(env, ab, messages);

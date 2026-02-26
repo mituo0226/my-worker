@@ -2,6 +2,7 @@ import { json } from "../lib/respond.js";
 import { getAB } from "../lib/ab.js";
 import { callProvider } from "../lib/providers.js";
 import { buildMessages } from "../lib/messages.js";
+import { buildTimeContextTokyo } from "../lib/time.js";
 
 export async function handleChat(req, env) {
   let body = {};
@@ -38,6 +39,7 @@ export async function handleChat(req, env) {
   const history = (rows.results || []).reverse();
 
   const messages = buildMessages({ history, userMessage: message, nickname });
+  messages.unshift({ role: "system", content: buildTimeContextTokyo() });
 
   let reply = "";
   let provider_request_id = null;
