@@ -43,9 +43,13 @@ export async function handleEmailTest(req, env) {
     const base = String(env.CHAT_PAGE_URL).trim();
     if (/^https?:\/\//i.test(base)) chatUrl = base;
   }
+  const loginId = String(body.loginId || "").trim();
+  const password = String(body.password || "").trim();
   const result = await sendNotificationEmail(env, {
     to,
     chatUrl: chatUrl || undefined,
+    loginId: loginId || undefined,
+    password: password || undefined,
   });
 
   return json(

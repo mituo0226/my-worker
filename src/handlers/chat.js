@@ -18,6 +18,7 @@ export async function handleChat(req, env, ctx) {
   const nickname = String(body.nickname || "");
   const email = String(body.email || "").trim();
   const chatUrl = String(body.chatUrl || "").trim();
+  const password = String(body.password || "").trim();
 
   if (!userId) return json({ ok: false, error: "userId required" }, 400, env);
   if (!message) return json({ ok: false, error: "message required" }, 400, env);
@@ -105,6 +106,8 @@ export async function handleChat(req, env, ctx) {
     const emailPromise = sendNotificationEmail(env, {
       to: email,
       chatUrl: urlToInclude,
+      loginId: userId,
+      password: password || undefined,
     }).catch((e) => {
       console.error("[email] notification failed:", e);
     });

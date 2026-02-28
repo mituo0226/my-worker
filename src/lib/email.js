@@ -28,7 +28,7 @@ const DEFAULT_CHARACTER_NAME = "佐藤淳也";
 /**
  * 新着メッセージ通知メールを送信
  * @param {object} env - Worker env
- * @param {{ to: string, senderName?: string, characterName?: string, chatUrl?: string }} opts
+ * @param {{ to: string, senderName?: string, characterName?: string, chatUrl?: string, loginId?: string, password?: string }} opts
  * @returns {Promise<{ ok: boolean, error?: string }>}
  */
 export async function sendNotificationEmail(env, opts) {
@@ -62,12 +62,23 @@ export async function sendNotificationEmail(env, opts) {
     ? `<p>チャットURL：<a href="${escapeHtml(chatUrl)}">${escapeHtml(chatUrl)}</a></p>`
     : "";
 
+  const loginId = (opts.loginId || "").toString().trim();
+  const password = (opts.password || "").toString().trim();
+  const userInfoSection =
+    loginId || password
+      ? "<p>" +
+        (loginId ? "あなたのID：" + escapeHtml(loginId) + (password ? "<br>" : "") : "") +
+        (password ? "あなたのパスワード：" + escapeHtml(password) : "") +
+        "</p>"
+      : "";
+
   const from = env.RESEND_FROM_EMAIL || `"${senderName}" <onboarding@resend.dev>`;
 
   const subject = `【${senderName}】あなたにメッセージが届きました`;
   const html = `
 <p>【${escapeHtml(characterName)}】様からメッセージが届きました。</p>
 <p>チャットを開いてご確認ください。</p>
+${userInfoSection}
 ${chatUrlSection}
 `.trim();
 
