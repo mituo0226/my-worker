@@ -31,8 +31,8 @@
 .ai-chat-bookmark-wrap { position: relative; padding-right: 28px; }
 .ai-chat-bookmark-detail { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
 .ai-chat-bookmark-detail summary { cursor: pointer; }
-.ai-chat-userinfo { padding: 10px 14px; margin: 0 12px 8px; background: #f0f0f0; border-radius: 8px; font-size: 13px; color: #333; line-height: 1.6; }
-.ai-chat-userinfo:empty { display: none; }
+.ai-chat-bookmark-link { padding: 6px 12px; font-size: 12px; color: #07c755; cursor: pointer; text-decoration: underline; flex-shrink: 0; }
+.ai-chat-bookmark-link:hover { opacity: 0.8; }
 @media (min-width: 421px) { .ai-chat-wrap { min-height: 600px; height: 600px; } }
 </style>
 
@@ -126,17 +126,10 @@
     if (el) el.style.display = "none";
   };
 
-  const userInfoHtml = (hasExternalUid || hasExternalUpass)
-    ? "<div class=\"ai-chat-userinfo\">" +
-      (hasExternalUid ? "<div>ログインID：" + externalUid + "</div>" : "") +
-      (hasExternalUpass ? "<div>パスワード：" + externalUpass + "</div>" : "") +
-      "</div>"
-    : "";
-
   root.innerHTML = `
     <div class="ai-chat-wrap">
       <div class="ai-chat-header">佐藤淳也</div>
-      ` + userInfoHtml + `
+      <div id="bookmark-link" class="ai-chat-bookmark-link">ブックマークしてない人はこちら</div>
       <div id="bookmark-guide" class="ai-chat-bookmark" style="display:none;">
         <div class="ai-chat-bookmark-wrap">
           <button class="ai-chat-bookmark-close" id="bookmark-guide-close" aria-label="閉じる">×</button>
@@ -259,6 +252,9 @@
   if (shouldShowGuide()) {
     document.getElementById("bookmark-guide").style.display = "block";
   }
+  document.getElementById("bookmark-link").addEventListener("click", function () {
+    document.getElementById("bookmark-guide").style.display = "block";
+  });
   document.getElementById("bookmark-guide-close").addEventListener("click", dismissBookmarkGuide);
   document.getElementById("btn-copy-url").addEventListener("click", function () {
     const url = window.location.href;
