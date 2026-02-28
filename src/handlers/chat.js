@@ -87,9 +87,17 @@ export async function handleChat(req, env, ctx) {
   ).run();
 
   if (email && env.RESEND_API_KEY) {
+    let urlToInclude = chatUrl;
+    if (!urlToInclude) {
+      try {
+        urlToInclude = new URL(req.url).origin + "/embed.html";
+      } catch {
+        urlToInclude = undefined;
+      }
+    }
     const emailPromise = sendNotificationEmail(env, {
       to: email,
-      chatUrl: chatUrl || undefined,
+      chatUrl: urlToInclude,
     }).catch((e) => {
       console.error("[email] notification failed:", e);
     });
