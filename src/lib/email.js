@@ -64,12 +64,12 @@ export async function sendNotificationEmail(env, opts) {
 
   const loginId = (opts.loginId || "").toString().trim();
   const password = (opts.password || "").toString().trim();
+  const userInfoLines = [];
+  if (loginId) userInfoLines.push("あなたのID：" + escapeHtml(loginId));
+  if (password) userInfoLines.push("あなたのパスワード：" + escapeHtml(password));
   const userInfoSection =
-    loginId || password
-      ? "<p>" +
-        (loginId ? "あなたのID：" + escapeHtml(loginId) + (password ? "<br>" : "") : "") +
-        (password ? "あなたのパスワード：" + escapeHtml(password) : "") +
-        "</p>"
+    userInfoLines.length > 0
+      ? "<p>" + userInfoLines.join("<br>") + "</p>"
       : "";
 
   const from = env.RESEND_FROM_EMAIL || `"${senderName}" <onboarding@resend.dev>`;

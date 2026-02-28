@@ -56,7 +56,7 @@ export async function handleEmailTest(req, env) {
     {
       ok: result.ok,
       error: result.error,
-      _debug: { hasApiKey, hasFrom, fromDomain, to, chatUrlIncluded: chatUrl || null },
+      _debug: { hasApiKey, hasFrom, fromDomain, to, chatUrlIncluded: chatUrl || null, loginIdIncluded: !!loginId, passwordIncluded: !!password },
     },
     result.ok ? 200 : 500,
     env
