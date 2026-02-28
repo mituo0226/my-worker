@@ -1,9 +1,10 @@
 /**
  * Resend API でメール送信
- * キャラクター名は env.CHAT_CHARACTER_NAME で指定（未設定時は「佐藤淳也」）
+ * メール送信者名は env.EMAIL_SENDER_NAME で指定（未設定時は「チャットサポートセンター」）
+ * ※チャットの応答キャラ名（CHAT_CHARACTER_NAME）とは別。通知メールは番組全体の窓口として送信。
  */
 
-const DEFAULT_CHARACTER_NAME = "佐藤淳也";
+const DEFAULT_SENDER_NAME = "チャットサポートセンター";
 const RESEND_API = "https://api.resend.com/emails";
 
 function isValidEmail(s) {
@@ -13,10 +14,21 @@ function isValidEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
 }
 
+function escapeHtml(s) {
+  if (!s || typeof s !== "string") return "";
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+const DEFAULT_CHARACTER_NAME = "佐藤淳也";
+
 /**
  * 新着メッセージ通知メールを送信
  * @param {object} env - Worker env
- * @param {{ to: string, characterName?: string, replyPreview?: string }} opts
+ * @param {{ to: string, senderName?: string, characterName?: string, chatUrl?: string }} opts
  * @returns {Promise<{ ok: boolean, error?: string }>}
  */
 export async function sendNotificationEmail(env, opts) {
@@ -30,17 +42,29 @@ export async function sendNotificationEmail(env, opts) {
     return { ok: false, error: "Invalid email" };
   }
 
+  const senderName =
+    (env.EMAIL_SENDER_NAME || opts.senderName || DEFAULT_SENDER_NAME)
+      .toString()
+      .trim() || DEFAULT_SENDER_NAME;
+
   const characterName =
     (env.CHAT_CHARACTER_NAME || opts.characterName || DEFAULT_CHARACTER_NAME)
       .toString()
       .trim() || DEFAULT_CHARACTER_NAME;
 
-  const from = env.RESEND_FROM_EMAIL || `"${characterName}" <onboarding@resend.dev>`;
+  let chatUrl = (opts.chatUrl || "").toString().trim();
+  if (chatUrl && !/^https?:\/\//i.test(chatUrl)) chatUrl = "";
+  const chatUrlHtml = chatUrl
+    ? `<p><a href="${escapeHtml(chatUrl)}">${escapeHtml(chatUrl)}</a></p>`
+    : "";
 
-  const subject = `【${characterName}】からメッセージが届きました`;
+  const from = env.RESEND_FROM_EMAIL || `"${senderName}" <onboarding@resend.dev>`;
+
+  const subject = `【${senderName}】あなたにメッセージが届きました`;
   const html = `
-<p>${characterName}からメッセージが届きました。</p>
+<p>【${escapeHtml(characterName)}】様からメッセージが届きました。</p>
 <p>チャットを開いてご確認ください。</p>
+${chatUrlHtml}
 `.trim();
 
   try {

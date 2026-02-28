@@ -17,6 +17,7 @@ export async function handleChat(req, env, ctx) {
   const message = String(body.message || "").trim();
   const nickname = String(body.nickname || "");
   const email = String(body.email || "").trim();
+  const chatUrl = String(body.chatUrl || "").trim();
 
   if (!userId) return json({ ok: false, error: "userId required" }, 400, env);
   if (!message) return json({ ok: false, error: "message required" }, 400, env);
@@ -86,7 +87,10 @@ export async function handleChat(req, env, ctx) {
   ).run();
 
   if (email && env.RESEND_API_KEY) {
-    const emailPromise = sendNotificationEmail(env, { to: email }).catch((e) => {
+    const emailPromise = sendNotificationEmail(env, {
+      to: email,
+      chatUrl: chatUrl || undefined,
+    }).catch((e) => {
       console.error("[email] notification failed:", e);
     });
     if (ctx && ctx.waitUntil) {

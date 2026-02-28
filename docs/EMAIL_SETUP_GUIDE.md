@@ -61,12 +61,12 @@ npx wrangler secret put RESEND_FROM_EMAIL
 プロンプトが表示されたら、次の形式で入力（ドメイン・アドレスは環境に合わせて変更）:
 
 ```
-"佐藤淳也" <chat@send.syugo-sin.com>
+"チャットサポートセンター" <chat@syugo-sin.com>
 ```
 
 **形式の説明:**
-- `"佐藤淳也"` … 送信者表示名（メールの「差出人」に表示される）
-- `<chat@send.syugo-sin.com>` … 送信元メールアドレス（Resend で検証したドメインのアドレス）
+- `"チャットサポートセンター"` … 送信者表示名（メールの「差出人」に表示される。番組全体の窓口名）
+- `<chat@syugo-sin.com>` … 送信元メールアドレス（Resend で検証したドメインのアドレス）
 
 ---
 
@@ -96,13 +96,15 @@ Invoke-RestMethod -Uri "https://worker.mituo0226.workers.dev/api/email/test" -Me
 
 **例: 佐藤淳也用**
 ```
-RESEND_FROM_EMAIL = "佐藤淳也" <junya@send.syugo-sin.com>
+RESEND_FROM_EMAIL = "チャットサポートセンター" <junya@send.syugo-sin.com>
+EMAIL_SENDER_NAME = チャットサポートセンター
 CHAT_CHARACTER_NAME = 佐藤淳也
 ```
 
 **例: 山田花子用（別 Worker）**
 ```
-RESEND_FROM_EMAIL = "山田花子" <hanako@send.syugo-sin.com>
+RESEND_FROM_EMAIL = "チャットサポートセンター" <hanako@send.syugo-sin.com>
+EMAIL_SENDER_NAME = チャットサポートセンター
 CHAT_CHARACTER_NAME = 山田花子
 ```
 
@@ -113,8 +115,9 @@ CHAT_CHARACTER_NAME = 山田花子
 | 変数 | 設定方法 | 例 |
 |------|----------|-----|
 | `RESEND_API_KEY` | `npx wrangler secret put RESEND_API_KEY` | （Resend の API キー） |
-| `RESEND_FROM_EMAIL` | `npx wrangler secret put RESEND_FROM_EMAIL` | `"佐藤淳也" <chat@send.syugo-sin.com>` |
-| `CHAT_CHARACTER_NAME` | `wrangler.jsonc` の vars または secret | `佐藤淳也` |
+| `RESEND_FROM_EMAIL` | `npx wrangler secret put RESEND_FROM_EMAIL` | `"チャットサポートセンター" <chat@syugo-sin.com>` |
+| `EMAIL_SENDER_NAME` | `wrangler.jsonc` の vars | `チャットサポートセンター`（件名・本文に使用。番組窓口名） |
+| `CHAT_CHARACTER_NAME` | `wrangler.jsonc` の vars | `佐藤淳也`（チャット応答のキャラ名。メール送信者名とは別） |
 
 ---
 

@@ -37,7 +37,11 @@ export async function handleEmailTest(req, env) {
     ? fromRaw.split("@").pop()?.replace(">", "").trim() || "(unknown)"
     : null;
 
-  const result = await sendNotificationEmail(env, { to });
+  const chatUrl = String(body.chatUrl || "").trim();
+  const result = await sendNotificationEmail(env, {
+    to,
+    chatUrl: chatUrl || undefined,
+  });
 
   return json(
     {
