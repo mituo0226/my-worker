@@ -5,7 +5,7 @@ import { buildMessages } from "../lib/messages.js";
 import { buildTimeContextTokyo } from "../lib/time.js";
 import { sendNotificationEmail } from "../lib/email.js";
 
-export async function handleChat(req, env) {
+export async function handleChat(req, env, ctx) {
   let body = {};
   try {
     body = await req.json();
@@ -86,10 +86,13 @@ export async function handleChat(req, env) {
   ).run();
 
   if (email && env.RESEND_API_KEY) {
-    try {
-      await sendNotificationEmail(env, { to: email });
-    } catch (e) {
+    const emailPromise = sendNotificationEmail(env, { to: email }).catch((e) => {
       console.error("[email] notification failed:", e);
+    });
+    if (ctx && ctx.waitUntil) {
+      ctx.waitUntil(emailPromise);
+    } else {
+      void emailPromise;
     }
   }
 
