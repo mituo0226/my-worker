@@ -7,6 +7,9 @@
   "name": "worker",
   "main": "src/index.js",
   "compatibility_date": "2026-02-19",
+  "vars": {
+    "CHAT_CHARACTER_NAME": "佐藤淳也"
+  },
   "compatibility_flags": [
     "nodejs_compat",
     "global_fetch_strictly_public"
