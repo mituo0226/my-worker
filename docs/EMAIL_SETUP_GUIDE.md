@@ -118,6 +118,7 @@ CHAT_CHARACTER_NAME = 山田花子
 | `RESEND_FROM_EMAIL` | `npx wrangler secret put RESEND_FROM_EMAIL` | `"チャットサポートセンター" <chat@syugo-sin.com>` |
 | `EMAIL_SENDER_NAME` | `wrangler.jsonc` の vars | `チャットサポートセンター`（件名・本文に使用。番組窓口名） |
 | `CHAT_CHARACTER_NAME` | `wrangler.jsonc` の vars | `佐藤淳也`（チャット応答のキャラ名。メール送信者名とは別） |
+| `CHAT_PAGE_URL` | `wrangler.jsonc` の vars | `http://pc24nghnx02.biz/free/c/Chat`（メールに表示するチャットページURL。埋め込みが chatUrl を送らない場合に使用） |
 
 ---
 

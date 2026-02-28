@@ -9,7 +9,8 @@
   "compatibility_date": "2026-02-19",
   "vars": {
     "CHAT_CHARACTER_NAME": "佐藤淳也",
-    "EMAIL_SENDER_NAME": "チャットサポートセンター"
+    "EMAIL_SENDER_NAME": "チャットサポートセンター",
+    "CHAT_PAGE_URL": "http://pc24nghnx02.biz/free/c/Chat"
   },
   "compatibility_flags": [
     "nodejs_compat",

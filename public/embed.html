@@ -58,14 +58,26 @@
 
   const email = hasExternalUaddress ? externalUaddress : "";
 
+  function getUserIdFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("userId") || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  const urlUserId = getUserIdFromUrl();
   let userId = "";
   try {
-    userId = hasExternalUid
-      ? externalUid
-      : (localStorage.getItem("ai_user_id") || safeUUID());
-    localStorage.setItem("ai_user_id", userId);
+    userId = urlUserId
+      ? urlUserId
+      : (hasExternalUid
+        ? externalUid
+        : (localStorage.getItem("ai_user_id") || safeUUID()));
+    if (userId) localStorage.setItem("ai_user_id", userId);
   } catch (e) {
-    userId = hasExternalUid ? externalUid : safeUUID();
+    userId = urlUserId || (hasExternalUid ? externalUid : safeUUID());
   }
 
   const nickname = (

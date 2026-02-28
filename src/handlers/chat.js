@@ -88,9 +88,18 @@ export async function handleChat(req, env, ctx) {
 
   if (email && env.RESEND_API_KEY) {
     let urlToInclude = chatUrl;
+    if (!urlToInclude && env.CHAT_PAGE_URL) {
+      const base = String(env.CHAT_PAGE_URL).trim();
+      if (/^https?:\/\//i.test(base)) {
+        const sep = base.includes("?") ? "&" : "?";
+        urlToInclude = base + sep + "userId=" + encodeURIComponent(userId);
+      }
+    }
     if (!urlToInclude) {
       try {
-        urlToInclude = new URL(req.url).origin + "/embed.html";
+        const base = new URL(req.url).origin + "/embed.html";
+        const sep = base.includes("?") ? "&" : "?";
+        urlToInclude = base + sep + "userId=" + encodeURIComponent(userId);
       } catch {
         urlToInclude = undefined;
       }
