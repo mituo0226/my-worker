@@ -90,10 +90,7 @@ export async function handleChat(req, env, ctx) {
     let urlToInclude = chatUrl;
     if (!urlToInclude && env.CHAT_PAGE_URL) {
       const base = String(env.CHAT_PAGE_URL).trim();
-      if (/^https?:\/\//i.test(base)) {
-        const sep = base.includes("?") ? "&" : "?";
-        urlToInclude = base + sep + "userId=" + encodeURIComponent(userId);
-      }
+      if (/^https?:\/\//i.test(base)) urlToInclude = base;
     }
     if (!urlToInclude) {
       try {
