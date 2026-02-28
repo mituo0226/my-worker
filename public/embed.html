@@ -378,7 +378,7 @@
     (nickname ? " / nickname=" + nickname : "") +
     (email ? " / email=" + (email.length > 20 ? email.slice(0, 17) + "..." : email) : " / email=(none)") +
     (hasExternalUid ? " / ログインID=" + externalUid : "") +
-    " / パスワード=" + (hasExternalUpass ? externalUpass : "external");
+    (hasExternalUpass ? " / パスワード=" + externalUpass : "");
 
 })();
 </script>
