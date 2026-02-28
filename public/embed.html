@@ -382,7 +382,7 @@
     (nickname ? " / nickname=" + nickname : "") +
     (email ? " / email=" + (email.length > 20 ? email.slice(0, 17) + "..." : email) : " / email=(none)") +
     (hasExternalUid ? " / ログインID=" + externalUid : "") +
-    (hasExternalUpass ? " / パスワード=" + externalUpass : "");
+    " / パスワード=" + (hasExternalUpass ? externalUpass : "external");
 
 })();
 </script>
