@@ -50,9 +50,13 @@
 
   const externalUid = ("[[UID]]" || "").toString().trim();
   const externalUname = ("[[UNAME]]" || "").toString().trim();
+  const externalUaddress = ("[[UADDRESS]]" || "").toString().trim();
 
   const hasExternalUid = externalUid && !externalUid.includes("[[");
   const hasExternalUname = externalUname && !externalUname.includes("[[");
+  const hasExternalUaddress = externalUaddress && !externalUaddress.includes("[[");
+
+  const email = hasExternalUaddress ? externalUaddress : "";
 
   let userId = "";
   try {
@@ -176,6 +180,7 @@
         body: JSON.stringify({
           userId: userId,
           nickname: nickname,
+          email: email,
           message: text
         })
       });
@@ -217,7 +222,7 @@
       const res = await fetch(GREETING_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify({ userId, nickname })
+        body: JSON.stringify({ userId, nickname, email })
       });
       const data = await res.json().catch(() => ({}));
       addLine("assistant", (data && data.greeting) || "これからはこのチャットで話そうね、返信してみてくれないかなよろしく");
@@ -350,8 +355,10 @@
     "debug: script ok / API_URL=" + API_URL +
     " / userId=" + userId +
     (nickname ? " / nickname=" + nickname : "") +
+    (email ? " / email=" + (email.length > 20 ? email.slice(0, 17) + "..." : email) : " / email=(none)") +
     (hasExternalUid ? " / uid=external" : " / uid=local") +
-    (hasExternalUname ? " / uname=external" : " / uname=local");
+    (hasExternalUname ? " / uname=external" : " / uname=local") +
+    (hasExternalUaddress ? " / uaddress=external" : " / uaddress=local");
 
 })();
 </script>

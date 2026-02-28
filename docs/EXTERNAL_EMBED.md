@@ -29,8 +29,9 @@
 
 - `[[UID]]` … 外部のユーザーID（あれば）
 - `[[UNAME]]` … 外部のユーザー名・ニックネーム（あれば）
+- `[[UADDRESS]]` … ユーザーのメールアドレス（あれば・通知用）
 
-置換されない場合は localStorage や `window.CURRENT_USERNAME` などにフォールバック。
+置換されない場合は localStorage や `window.CURRENT_USERNAME` などにフォールバック。email は空になる。
 
 ## 貼り付け用コード（参考）
 

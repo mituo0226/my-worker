@@ -15,6 +15,7 @@ export async function handleChat(req, env) {
   const userId = String(body.userId || "").trim();
   const message = String(body.message || "").trim();
   const nickname = String(body.nickname || "");
+  const email = String(body.email || "").trim();
 
   if (!userId) return json({ ok: false, error: "userId required" }, 400, env);
   if (!message) return json({ ok: false, error: "message required" }, 400, env);
@@ -90,6 +91,7 @@ export async function handleChat(req, env) {
       ab,
       provider_request_id,
       latency_ms: latency,
+      _email: email || undefined,
     },
     200,
     env
