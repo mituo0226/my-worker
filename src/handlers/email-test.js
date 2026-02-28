@@ -31,13 +31,19 @@ export async function handleEmailTest(req, env) {
   }
 
   const hasApiKey = !!(env.RESEND_API_KEY && typeof env.RESEND_API_KEY === "string");
+  const fromRaw = env.RESEND_FROM_EMAIL;
+  const hasFrom = !!(fromRaw && typeof fromRaw === "string");
+  const fromDomain = hasFrom && fromRaw.includes("@")
+    ? fromRaw.split("@").pop()?.replace(">", "").trim() || "(unknown)"
+    : null;
+
   const result = await sendNotificationEmail(env, { to });
 
   return json(
     {
       ok: result.ok,
       error: result.error,
-      _debug: { hasApiKey, to },
+      _debug: { hasApiKey, hasFrom, fromDomain, to },
     },
     result.ok ? 200 : 500,
     env
