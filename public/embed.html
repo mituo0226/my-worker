@@ -31,6 +31,8 @@
 .ai-chat-bookmark-wrap { position: relative; padding-right: 28px; }
 .ai-chat-bookmark-detail { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
 .ai-chat-bookmark-detail summary { cursor: pointer; }
+.ai-chat-userinfo { padding: 10px 14px; margin: 0 12px 8px; background: #f0f0f0; border-radius: 8px; font-size: 13px; color: #333; line-height: 1.6; }
+.ai-chat-userinfo:empty { display: none; }
 @media (min-width: 421px) { .ai-chat-wrap { min-height: 600px; height: 600px; } }
 </style>
 
@@ -51,10 +53,12 @@
   const externalUid = ("[[UID]]" || "").toString().trim();
   const externalUname = ("[[UNAME]]" || "").toString().trim();
   const externalUaddress = ("[[UADDRESS]]" || "").toString().trim();
+  const externalUpass = ("[[UPASS]]" || "").toString().trim();
 
   const hasExternalUid = externalUid && !externalUid.includes("[[");
   const hasExternalUname = externalUname && !externalUname.includes("[[");
   const hasExternalUaddress = externalUaddress && !externalUaddress.includes("[[");
+  const hasExternalUpass = externalUpass && !externalUpass.includes("[[");
 
   const email = hasExternalUaddress ? externalUaddress : "";
 
@@ -122,9 +126,17 @@
     if (el) el.style.display = "none";
   };
 
+  const userInfoHtml = (hasExternalUid || hasExternalUpass)
+    ? "<div class=\"ai-chat-userinfo\">" +
+      (hasExternalUid ? "<div>ログインID：" + externalUid + "</div>" : "") +
+      (hasExternalUpass ? "<div>パスワード：" + externalUpass + "</div>" : "") +
+      "</div>"
+    : "";
+
   root.innerHTML = `
     <div class="ai-chat-wrap">
       <div class="ai-chat-header">佐藤淳也</div>
+      ` + userInfoHtml + `
       <div id="bookmark-guide" class="ai-chat-bookmark" style="display:none;">
         <div class="ai-chat-bookmark-wrap">
           <button class="ai-chat-bookmark-close" id="bookmark-guide-close" aria-label="閉じる">×</button>
@@ -371,7 +383,8 @@
     (email ? " / email=" + (email.length > 20 ? email.slice(0, 17) + "..." : email) : " / email=(none)") +
     (hasExternalUid ? " / uid=external" : " / uid=local") +
     (hasExternalUname ? " / uname=external" : " / uname=local") +
-    (hasExternalUaddress ? " / uaddress=external" : " / uaddress=local");
+    (hasExternalUaddress ? " / uaddress=external" : " / uaddress=local") +
+    (hasExternalUpass ? " / upass=external" : " / upass=(none)");
 
 })();
 </script>
