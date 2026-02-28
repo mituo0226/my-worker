@@ -37,7 +37,12 @@ export async function handleEmailTest(req, env) {
     ? fromRaw.split("@").pop()?.replace(">", "").trim() || "(unknown)"
     : null;
 
-  const chatUrl = String(body.chatUrl || "").trim();
+  let chatUrl = String(body.chatUrl || "").trim();
+  if (chatUrl && !/^https?:\/\//i.test(chatUrl)) chatUrl = "";
+  if (!chatUrl && env.CHAT_PAGE_URL) {
+    const base = String(env.CHAT_PAGE_URL).trim();
+    if (/^https?:\/\//i.test(base)) chatUrl = base;
+  }
   const result = await sendNotificationEmail(env, {
     to,
     chatUrl: chatUrl || undefined,
@@ -47,7 +52,7 @@ export async function handleEmailTest(req, env) {
     {
       ok: result.ok,
       error: result.error,
-      _debug: { hasApiKey, hasFrom, fromDomain, to },
+      _debug: { hasApiKey, hasFrom, fromDomain, to, chatUrlIncluded: chatUrl || null },
     },
     result.ok ? 200 : 500,
     env

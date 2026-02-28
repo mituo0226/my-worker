@@ -54,8 +54,12 @@ export async function sendNotificationEmail(env, opts) {
 
   let chatUrl = (opts.chatUrl || "").toString().trim();
   if (chatUrl && !/^https?:\/\//i.test(chatUrl)) chatUrl = "";
-  const chatUrlHtml = chatUrl
-    ? `<p><a href="${escapeHtml(chatUrl)}">${escapeHtml(chatUrl)}</a></p>`
+  if (!chatUrl && env.CHAT_PAGE_URL) {
+    const base = String(env.CHAT_PAGE_URL).trim();
+    if (/^https?:\/\//i.test(base)) chatUrl = base;
+  }
+  const chatUrlSection = chatUrl
+    ? `<p>チャットURL：<a href="${escapeHtml(chatUrl)}">${escapeHtml(chatUrl)}</a></p>`
     : "";
 
   const from = env.RESEND_FROM_EMAIL || `"${senderName}" <onboarding@resend.dev>`;
@@ -64,7 +68,7 @@ export async function sendNotificationEmail(env, opts) {
   const html = `
 <p>【${escapeHtml(characterName)}】様からメッセージが届きました。</p>
 <p>チャットを開いてご確認ください。</p>
-${chatUrlHtml}
+${chatUrlSection}
 `.trim();
 
   try {

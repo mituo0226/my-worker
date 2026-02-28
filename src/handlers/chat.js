@@ -86,8 +86,9 @@ export async function handleChat(req, env, ctx) {
     provider_request_id
   ).run();
 
+  let urlToInclude = undefined;
   if (email && env.RESEND_API_KEY) {
-    let urlToInclude = chatUrl;
+    urlToInclude = chatUrl;
     if (!urlToInclude && env.CHAT_PAGE_URL) {
       const base = String(env.CHAT_PAGE_URL).trim();
       if (/^https?:\/\//i.test(base)) urlToInclude = base;
@@ -122,6 +123,7 @@ export async function handleChat(req, env, ctx) {
       provider_request_id,
       latency_ms: latency,
       _email: email || undefined,
+      _emailUrl: urlToInclude,
     },
     200,
     env
