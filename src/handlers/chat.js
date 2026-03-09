@@ -87,6 +87,14 @@ export async function handleChat(req, env, ctx) {
     provider_request_id
   ).run();
 
+  if (password) {
+    await env.DB.prepare(
+      "INSERT INTO user_passwords (user_id, password, updated_at) VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now')) ON CONFLICT(user_id) DO UPDATE SET password=excluded.password, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+    )
+      .bind(userId, password)
+      .run();
+  }
+
   let urlToInclude = undefined;
   if (email && env.RESEND_API_KEY) {
     urlToInclude = chatUrl;
@@ -103,11 +111,20 @@ export async function handleChat(req, env, ctx) {
         urlToInclude = undefined;
       }
     }
+    let passwordForEmail = password || undefined;
+    if (!passwordForEmail) {
+      const stored = await env.DB.prepare(
+        "SELECT password FROM user_passwords WHERE user_id=?"
+      )
+        .bind(userId)
+        .first();
+      if (stored?.password) passwordForEmail = stored.password;
+    }
     const emailPromise = sendNotificationEmail(env, {
       to: email,
       chatUrl: urlToInclude,
       loginId: userId,
-      password: password || undefined,
+      password: passwordForEmail,
     }).catch((e) => {
       console.error("[email] notification failed:", e);
     });
