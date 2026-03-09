@@ -1,11 +1,23 @@
 /**
  * Resend API でメール送信
- * メール送信者名は env.EMAIL_SENDER_NAME で指定（未設定時は「チャットサポートセンター」）
+ * メール送信者名は env.EMAIL_SENDER_NAME で指定（未設定時は「【chatセンター】」）
  * ※チャットの応答キャラ名（CHAT_CHARACTER_NAME）とは別。通知メールは番組全体の窓口として送信。
  */
 
-const DEFAULT_SENDER_NAME = "チャットサポートセンター";
+const DEFAULT_SENDER_NAME = "【chatセンター】";
 const RESEND_API = "https://api.resend.com/emails";
+
+/** "名前" <addr@example.com> または addr@example.com からメールアドレス部分を抽出 */
+function extractEmailFromFromField(fromStr) {
+  if (!fromStr || typeof fromStr !== "string") return "";
+  const s = fromStr.trim();
+  const angle = s.indexOf("<");
+  if (angle !== -1) {
+    const close = s.indexOf(">", angle);
+    if (close !== -1) return s.slice(angle + 1, close).trim();
+  }
+  return s;
+}
 
 function isValidEmail(s) {
   if (!s || typeof s !== "string") return false;
@@ -72,7 +84,13 @@ export async function sendNotificationEmail(env, opts) {
       ? "<p>" + userInfoLines.join("<br>") + "</p>"
       : "";
 
-  const from = env.RESEND_FROM_EMAIL || `"${senderName}" <onboarding@resend.dev>`;
+  const fromEmail = env.RESEND_FROM_EMAIL
+    ? extractEmailFromFromField(env.RESEND_FROM_EMAIL)
+    : "";
+  const fromAddr = fromEmail && isValidEmail(fromEmail)
+    ? fromEmail
+    : "onboarding@resend.dev";
+  const from = `"${senderName}" <${fromAddr}>`;
 
   const subject = `【${senderName}】あなたにメッセージが届きました`;
   const html = `
