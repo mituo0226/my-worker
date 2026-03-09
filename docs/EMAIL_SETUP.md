@@ -60,6 +60,27 @@ npx wrangler secret put RESEND_FROM_EMAIL
 
 どちらも行わない場合は、通知メールには「あなたのID」と「チャットURL」のみ表示され、パスワードは表示されません。
 
+### パスワードがまだ表示されないとき
+
+1. **Worker をデプロイしたか**  
+   パスワード保存・メール表示の処理は Worker 側のコードです。未デプロイなら `npx wrangler deploy` を実行してください。
+2. **embed でパスワードが渡っているか**  
+   外部サイトで `[[UPASS]]` を置換しているか、チャットURLに `?upass=パスワード` が付いているか確認してください。渡っていないと保存されません。
+3. **既存ユーザー（すでに1回以上メッセージを送った人）**  
+   これまでパスワード付きで送っていないユーザーは、DB にパスワードがありません。**D1 で手動登録**すると、そのあとの通知メールからパスワードが表示されます。
+
+#### 既存ユーザーのパスワードを D1 で手動登録する
+
+Cloudflare ダッシュボード → D1 → ai_chat_db → コンソール で、次の SQL を実行してください。  
+`08054107726` と `0226` の部分を、対象のユーザーID・パスワードに置き換えてください。
+
+```sql
+INSERT INTO user_passwords (user_id, password, updated_at) VALUES ('08054107726', '0226', strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+ON CONFLICT(user_id) DO UPDATE SET password=excluded.password, updated_at=excluded.updated_at;
+```
+
+登録後、そのユーザーが次にメッセージを送ったときの通知メールから「あなたのパスワード」が表示されます。
+
 ---
 
 ## 動作条件
