@@ -9,6 +9,7 @@
 | **runs** | `chat_runs` | API 呼び出しログ（レイテンシ・文字数・provider_request_id） |
 | **summaries** | `chat_summaries` | 会話サマリー（バケット単位の要約） |
 | **users** | `users` | ユーザー情報（nickname, favorite_movie, memo） |
+| **通知メール** | `user_passwords` | ユーザーごとのパスワード（通知メールに表示する用） |
 
 ※ `_cf_KV` は Cloudflare 内部用。通常は触らない。
 
@@ -22,6 +23,7 @@
 | `chat_runs` | 呼び出しログ |
 | `chat_summaries` | 会話サマリー |
 | `users` | ユーザー情報 |
+| `user_passwords` | 通知メール用パスワード（user_id, password, updated_at） |
 
 ## 運用ルール
 

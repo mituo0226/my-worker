@@ -40,7 +40,7 @@
 - `src/lib/email.js` で Resend API を呼び出し
 - チャット返信時に `email` があれば通知メールを送信
 - キャラクター名は `CHAT_CHARACTER_NAME`（env）でテンプレート化
-- 詳細: `docs/EMAIL_SETUP.md`
+- 詳細: [EMAIL_SETUP.md](./EMAIL_SETUP.md)
 
 **確認方法**:
 1. `npx wrangler secret put RESEND_API_KEY` で API キーを設定

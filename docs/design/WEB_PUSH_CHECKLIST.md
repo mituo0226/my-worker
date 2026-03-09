@@ -136,7 +136,7 @@
 - サードパーティ cookie 等のポリシーには要確認
 
 **修正箇所**
-- `docs/EXTERNAL_EMBED.md` … 埋め込み手順を iframe 方式に更新
+- [EXTERNAL_EMBED.md](../embed/EXTERNAL_EMBED.md) … 埋め込み手順を iframe 方式に更新
 - `public/embed.html` … `?uid=&uname=` のクエリパラメータ対応を追加（既存 `[[UID]]` 置換の代替）
 
 ---

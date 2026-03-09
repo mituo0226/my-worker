@@ -57,7 +57,7 @@ Cloudflare Worker に **D1 がバインド済み**。コード内では `env.DB`
 
 - フロントコードは **body 以下から** 貼り付ける形式（完全な HTML の形ではなく可）
 - 外部サイトのフリーページに貼り付けてチャットを表示する
-- 詳細・貼り付け用コードは **`docs/EXTERNAL_EMBED.md`** を参照
+- 詳細・貼り付け用コードは **`docs/embed/EXTERNAL_EMBED.md`** を参照
 
 ---
 

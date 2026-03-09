@@ -6,7 +6,7 @@
 
 - **プロジェクト概要・ルール**: [`PROJECT.md`](./PROJECT.md)
 - **D1 データベース**: データベース名 `ai_chat_db`、バインディング `env.DB`。詳細は PROJECT.md の「D1 データベース」節
-- **外部埋め込み用コード**: [`docs/EXTERNAL_EMBED.md`](./docs/EXTERNAL_EMBED.md)
+- **外部埋め込み用コード**: [docs/embed/EXTERNAL_EMBED.md](./docs/embed/EXTERNAL_EMBED.md)
 - **スキーマ（D1）**: [`schema/README.md`](./schema/README.md)
 
 ## デプロイ
