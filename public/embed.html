@@ -70,8 +70,17 @@
       return "";
     }
   }
+  function getUpassFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return (params.get("upass") || "").trim();
+    } catch (e) {
+      return "";
+    }
+  }
 
   const urlUserId = getUserIdFromUrl();
+  const urlUpass = getUpassFromUrl();
   let userId = "";
   try {
     userId = urlUserId
@@ -200,7 +209,7 @@
           email: email,
           message: text,
           chatUrl: window.location.href,
-          password: hasExternalUpass ? externalUpass : ""
+          password: (hasExternalUpass ? externalUpass : "") || urlUpass || ""
         })
       });
 
