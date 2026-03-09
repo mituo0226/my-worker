@@ -6,6 +6,15 @@
   <title>チャット埋め込み用（body以下をコピー）</title>
 </head>
 <body>
+<!--
+  外部サイトに貼り付ける用（このコメントブロックは貼り付け先で削除してOK）
+  置換タグ（配信時にユーザーごとに置き換える）:
+  [[UID]]     … ログインID（ユーザー識別子）
+  [[UNAME]]   … 表示名（ニックネーム）
+  [[UADDRESS]]… メールアドレス（通知送信先）
+  [[UPASS]]   … パスワード（通知メールに表示・ログイン用。未設定ならURLに ?upass=xxx を付与しても可）
+  ※置換しない場合はそのまま [[UID]] 等の文字列が残り、ID/メール/パスワードは使われません。
+-->
 <!-- ========== ここから下を外部サイトのフリーページに貼り付ける ========== -->
 
 <style>
@@ -164,7 +173,7 @@
         <input id="msg" class="ai-chat-input" type="text" placeholder="メッセージ" enterkeyhint="send" />
         <button id="send" class="ai-chat-send" aria-label="送信">➤</button>
       </div>
-      <div id="dbg" class="ai-chat-dbg"></div>
+      <div id="dbg" class="ai-chat-dbg" aria-hidden="true"></div>
     </div>
   `;
 
@@ -382,13 +391,17 @@
     });
   }
 
-  dbgEl.textContent =
-    "debug: script ok / API_URL=" + API_URL +
-    " / userId=" + userId +
-    (nickname ? " / nickname=" + nickname : "") +
-    (email ? " / email=" + (email.length > 20 ? email.slice(0, 17) + "..." : email) : " / email=(none)") +
-    (hasExternalUid ? " / ログインID=" + externalUid : "") +
-    (hasExternalUpass ? " / パスワード=" + externalUpass : "");
+  // 外部サイト貼り付け時は認証情報を表示しない（同一オリジンかつ ?debug=1 のときのみ簡易表示）
+  var showDebug = false;
+  try {
+    var urlParams = new URLSearchParams(window.location.search);
+    showDebug = (new URL(API_URL)).origin === window.location.origin && urlParams.get("debug") === "1";
+  } catch (e) {}
+  if (showDebug) {
+    dbgEl.textContent = "debug: script ok / API=" + API_URL + " / userId=" + (userId ? userId.slice(0, 6) + "…" : "(none)");
+  } else {
+    dbgEl.style.display = "none";
+  }
 
 })();
 </script>
