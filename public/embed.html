@@ -231,6 +231,23 @@
     warnEl.style.display = msg ? "block" : "none";
   }
 
+  /** タイピング表示を少なくとも1フレーム描画してから続行（応答が速くてもアニメが見えるようにする） */
+  function afterTypingPaint() {
+    return new Promise(function (resolve) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(resolve);
+      });
+    });
+  }
+
+  /** タイピング表示の最低表示時間が経過するまで待つ */
+  function waitRemainingTypingMin(shownAt, minMs) {
+    const elapsed = Date.now() - shownAt;
+    const remaining = minMs - elapsed;
+    if (remaining <= 0) return Promise.resolve();
+    return new Promise(function (r) { setTimeout(r, remaining); });
+  }
+
   async function send() {
     const text = (msgEl.value || "").trim();
     if (!text) return;
@@ -240,6 +257,10 @@
     msgEl.value = "";
     sendEl.disabled = true;
     showTyping();
+    await afterTypingPaint();
+
+    const typingShownAt = Date.now();
+    const TYPING_MIN_MS = 400;
 
     try {
       const res = await fetch(API_URL, {
@@ -260,12 +281,14 @@
       try { data = JSON.parse(raw); } catch {}
 
       if (!res.ok) {
+        await waitRemainingTypingMin(typingShownAt, TYPING_MIN_MS);
         hideTyping();
         showWarn("APIエラー: " + res.status + " " + raw.slice(0, 200));
         addLine("assistant", "サーバー側でエラーが出たみたい。少し待ってもう一度送ってみて");
         return;
       }
 
+      await waitRemainingTypingMin(typingShownAt, TYPING_MIN_MS);
       hideTyping();
       addLine(
         "assistant",
@@ -275,6 +298,7 @@
       );
 
     } catch (e) {
+      await waitRemainingTypingMin(typingShownAt, TYPING_MIN_MS);
       hideTyping();
       showWarn("通信エラー: " + String(e));
       addLine("assistant", "通信エラーが出たみたい。しばらくしてからもう一度送ってみて");
