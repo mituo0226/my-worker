@@ -103,6 +103,7 @@ export async function handleChat(req, env, ctx) {
 
   let urlToInclude = undefined;
   if (email && env.RESEND_API_KEY) {
+    /* 同一メールアドレスへの通知は3時間に1回まで（スロットル） */
     const throttleRow = await env.DB.prepare(
       "SELECT last_sent_at FROM email_notification_throttle WHERE email = ?"
     )
@@ -145,6 +146,7 @@ export async function handleChat(req, env, ctx) {
         password: passwordForEmail,
       })
         .then(async (result) => {
+          /* 送信成功時のみ last_sent_at を更新（次回は3時間後まで送らない） */
           if (result?.ok) {
             await env.DB.prepare(
               "INSERT INTO email_notification_throttle (email, last_sent_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now')) ON CONFLICT(email) DO UPDATE SET last_sent_at=excluded.last_sent_at"

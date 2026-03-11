@@ -26,8 +26,9 @@
 .ai-chat-msg { max-width: 78%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
 .ai-chat-msg.assistant { align-self: flex-start; background: #fff; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 .ai-chat-msg.user { align-self: flex-end; background: #95ec69; color: #333; border-bottom-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
-.ai-chat-input-wrap { padding: 10px 12px; background: #f7f7f7; flex-shrink: 0; display: flex; gap: 8px; align-items: center; }
-.ai-chat-input { flex: 1; padding: 12px 16px; border: none; border-radius: 24px; font-size: 16px; background: #fff; -webkit-appearance: none; appearance: none; }
+/* 入力エリア: PCで折り返し・スマホで縦に自動伸長。送信ボタンは下揃え */
+.ai-chat-input-wrap { padding: 10px 12px; background: #f7f7f7; flex-shrink: 0; display: flex; gap: 8px; align-items: flex-end; }
+.ai-chat-input { flex: 1; min-width: 0; min-height: 48px; max-height: 120px; padding: 12px 16px; border: none; border-radius: 24px; font-size: 16px; line-height: 1.5; background: #fff; -webkit-appearance: none; appearance: none; resize: none; overflow-y: auto; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; box-sizing: border-box; }
 .ai-chat-send { width: 48px; height: 48px; min-width: 48px; border: none; border-radius: 50%; background: #07c755; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .ai-chat-send:disabled { opacity: 0.6; cursor: not-allowed; }
 .ai-chat-warn { padding: 8px 12px; font-size: 13px; color: #c00; }
@@ -44,6 +45,7 @@
 .ai-chat-bookmark-link { padding: 6px 12px; font-size: 12px; color: #07c755; cursor: pointer; text-decoration: underline; flex-shrink: 0; }
 .ai-chat-bookmark-link:hover { opacity: 0.8; }
 .ai-chat-photo { width: 100%; max-height: 160px; object-fit: cover; object-position: center top; flex-shrink: 0; display: block; }
+/* 相手入力中インジケータ（三点バウンス） */
 .ai-chat-typing-wrap { align-self: flex-start; }
 .ai-chat-typing-dots { display: inline-flex; gap: 2px; padding: 4px 0; }
 .ai-chat-typing-dots span { animation: ai-chat-typing-bounce 0.6s ease-in-out infinite both; }
@@ -190,7 +192,7 @@
       <div id="log" class="ai-chat-log"></div>
       <div id="warn" class="ai-chat-warn" style="display:none;"></div>
       <div class="ai-chat-input-wrap">
-        <input id="msg" class="ai-chat-input" type="text" placeholder="メッセージ" enterkeyhint="send" />
+        <textarea id="msg" class="ai-chat-input" rows="1" placeholder="メッセージ" enterkeyhint="send"></textarea>
         <button id="send" class="ai-chat-send" aria-label="送信">➤</button>
       </div>
       <div id="dbg" class="ai-chat-dbg" aria-hidden="true"></div>
@@ -203,8 +205,21 @@
   const warnEl = document.getElementById("warn");
   const dbgEl = document.getElementById("dbg");
 
+  /** 入力欄の高さを内容に合わせて伸縮（スマホで縦に広がる）。最小48px・最大120px。 */
+  function resizeMsgInput() {
+    msgEl.style.height = "0px";
+    msgEl.style.height = Math.max(48, Math.min(msgEl.scrollHeight, 120)) + "px";
+  }
+  /** 送信後などで入力欄を空にしたときに高さを1行に戻す */
+  function resetMsgInputHeight() {
+    msgEl.style.height = "0px";
+    msgEl.style.height = Math.max(48, Math.min(msgEl.scrollHeight || 48, 120)) + "px";
+  }
+  msgEl.addEventListener("input", resizeMsgInput);
+
   let history = [];
 
+  /** チャットログに1件追加（user / assistant）して最下部へスクロール */
   function addLine(role, text) {
     const div = document.createElement("div");
     div.className = "ai-chat-msg " + role;
@@ -214,6 +229,7 @@
     history.push({ role, content: text });
   }
 
+  /** 相手入力中インジケータ（三点バウンス）を表示 */
   function showTyping() {
     const wrap = document.createElement("div");
     wrap.id = "typing-indicator";
@@ -222,16 +238,18 @@
     logEl.appendChild(wrap);
     logEl.scrollTop = logEl.scrollHeight;
   }
+  /** 相手入力中インジケータを非表示にする */
   function hideTyping() {
     document.getElementById("typing-indicator")?.remove();
   }
 
+  /** 警告メッセージを表示／非表示 */
   function showWarn(msg) {
     warnEl.textContent = msg;
     warnEl.style.display = msg ? "block" : "none";
   }
 
-  /** タイピング表示を少なくとも1フレーム描画してから続行（応答が速くてもアニメが見えるようにする） */
+  /** タイピング表示を少なくとも1フレーム描画してからAPIを呼ぶ（応答が速くても「...」アニメが見えるようにする） */
   function afterTypingPaint() {
     return new Promise(function (resolve) {
       requestAnimationFrame(function () {
@@ -240,7 +258,7 @@
     });
   }
 
-  /** タイピング表示の最低表示時間が経過するまで待つ */
+  /** タイピング表示の最低表示時間（ms）が経過するまで待つ。経過済みなら即 resolve。 */
   function waitRemainingTypingMin(shownAt, minMs) {
     const elapsed = Date.now() - shownAt;
     const remaining = minMs - elapsed;
@@ -248,6 +266,7 @@
     return new Promise(function (r) { setTimeout(r, remaining); });
   }
 
+  /** メッセージ送信: ユーザー発言をログに追加 → タイピング表示 → API呼び出し → 返信を追加 */
   async function send() {
     const text = (msgEl.value || "").trim();
     if (!text) return;
@@ -255,12 +274,13 @@
     showWarn("");
     addLine("user", text);
     msgEl.value = "";
+    resetMsgInputHeight();
     sendEl.disabled = true;
     showTyping();
     await afterTypingPaint();
 
     const typingShownAt = Date.now();
-    const TYPING_MIN_MS = 400;
+    const TYPING_MIN_MS = 400; /* タイピング表示の最低表示時間（応答が速くてもアニメを見せる） */
 
     try {
       const res = await fetch(API_URL, {
