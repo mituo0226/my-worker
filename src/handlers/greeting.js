@@ -30,24 +30,44 @@ export async function handleGreeting(req, env) {
 
   const history = (rows.results || []).reverse();
 
-  if (history.length === 0) {
-    return json({ ok: true, greeting: STATIC_GREETING }, 200, env);
-  }
-
   const ab = await getAB(env, userId);
   const turnCount = Math.max(1, Number(turnRow?.c ?? 0) + 1);
   const system = getSystemPrompt({ nickname, turnCount });
+  const timeContext = buildTimeContextTokyo();
 
-  const greetingPrompt = `あなたは佐藤淳也。このユーザーとは過去に会話している。
-直近の会話を踏まえ、再訪した相手への挨拶を1文（50〜80字）で出力して。
-温かく、過去のやり取りを感じさせる迎え方で。出力は挨拶の文言のみ。`;
+  if (history.length === 0) {
+    const firstGreetingPrompt = `【初回挨拶の指示】
+上記「一日のスケジュール」と【現在時刻(日本時間)】を絶対基準に、次の2つを1文にまとめて出力すること。
+1) 今この瞬間、淳也が何をしているか（場所・行動を具体的に。例: アルバイト終わってシャワー浴びて、これからレッスンに向かうところ 等）
+2) これからチャットで話そう、という温かい誘い（「返信してみてくれないかな」「よろしく」等）
+曖昧な「のんびりしてた」は禁止。50〜100字。挨拶の文言のみ。`;
+    const messages = [
+      { role: "system", content: system + "\n\n" + firstGreetingPrompt },
+      { role: "user", content: "今の自分の様子（スケジュールと時刻に沿って具体的に）と、初めて会う相手への挨拶を1文で出力して。" },
+    ];
+    messages.unshift({ role: "system", content: timeContext });
+    try {
+      const result = await callProvider(env, ab, messages);
+      const greeting = (result.reply || "").trim() || STATIC_GREETING;
+      return json({ ok: true, greeting }, 200, env);
+    } catch {
+      return json({ ok: true, greeting: STATIC_GREETING }, 200, env);
+    }
+  }
+
+  const greetingPrompt = `【挨拶の指示】
+あなたは佐藤淳也。このユーザーとは過去に会話している。
+上記「一日のスケジュール」と【現在時刻(日本時間)】を絶対基準に、次の2つを1文にまとめて出力すること。
+1) 今この瞬間、淳也が何をしているか（場所・行動を具体的に。例: アルバイト終わってシャワー浴びて、これからレッスンに向かうところ／レッスン終わって移動中／カフェで一息ついてるとこ 等）
+2) 再訪した相手への温かい迎え（「また話せて嬉しい」等）
+曖昧な「のんびりしてた」は禁止。50〜100字。挨拶の文言のみ。`;
 
   const messages = [
     { role: "system", content: system + "\n\n" + greetingPrompt },
     ...history,
-    { role: "user", content: "再訪への挨拶を1文で出力して。" },
+    { role: "user", content: "今の自分の様子（スケジュールと時刻に沿って具体的に）と、再訪した相手への挨拶を1文で出力して。" },
   ];
-  messages.unshift({ role: "system", content: buildTimeContextTokyo() });
+  messages.unshift({ role: "system", content: timeContext });
 
   try {
     const result = await callProvider(env, ab, messages);
