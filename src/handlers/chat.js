@@ -103,41 +103,64 @@ export async function handleChat(req, env, ctx) {
 
   let urlToInclude = undefined;
   if (email && env.RESEND_API_KEY) {
-    urlToInclude = chatUrl;
-    if (!urlToInclude && env.CHAT_PAGE_URL) {
-      const base = String(env.CHAT_PAGE_URL).trim();
-      if (/^https?:\/\//i.test(base)) urlToInclude = base;
-    }
-    if (!urlToInclude) {
-      try {
-        const base = new URL(req.url).origin + "/embed.html";
-        const sep = base.includes("?") ? "&" : "?";
-        urlToInclude = base + sep + "userId=" + encodeURIComponent(userId);
-      } catch {
-        urlToInclude = undefined;
+    const throttleRow = await env.DB.prepare(
+      "SELECT last_sent_at FROM email_notification_throttle WHERE email = ?"
+    )
+      .bind(email)
+      .first();
+    const lastSentAt = throttleRow?.last_sent_at
+      ? new Date(throttleRow.last_sent_at).getTime()
+      : 0;
+    const threeHoursMs = 3 * 60 * 60 * 1000;
+    const shouldSend = Date.now() - lastSentAt >= threeHoursMs;
+
+    if (shouldSend) {
+      urlToInclude = chatUrl;
+      if (!urlToInclude && env.CHAT_PAGE_URL) {
+        const base = String(env.CHAT_PAGE_URL).trim();
+        if (/^https?:\/\//i.test(base)) urlToInclude = base;
       }
-    }
-    let passwordForEmail = password || undefined;
-    if (!passwordForEmail) {
-      const stored = await env.DB.prepare(
-        "SELECT password FROM user_passwords WHERE user_id=?"
-      )
-        .bind(userId)
-        .first();
-      if (stored?.password) passwordForEmail = stored.password;
-    }
-    const emailPromise = sendNotificationEmail(env, {
-      to: email,
-      chatUrl: urlToInclude,
-      loginId: userId,
-      password: passwordForEmail,
-    }).catch((e) => {
-      console.error("[email] notification failed:", e);
-    });
-    if (ctx && ctx.waitUntil) {
-      ctx.waitUntil(emailPromise);
-    } else {
-      void emailPromise;
+      if (!urlToInclude) {
+        try {
+          const base = new URL(req.url).origin + "/embed.html";
+          const sep = base.includes("?") ? "&" : "?";
+          urlToInclude = base + sep + "userId=" + encodeURIComponent(userId);
+        } catch {
+          urlToInclude = undefined;
+        }
+      }
+      let passwordForEmail = password || undefined;
+      if (!passwordForEmail) {
+        const stored = await env.DB.prepare(
+          "SELECT password FROM user_passwords WHERE user_id=?"
+        )
+          .bind(userId)
+          .first();
+        if (stored?.password) passwordForEmail = stored.password;
+      }
+      const emailPromise = sendNotificationEmail(env, {
+        to: email,
+        chatUrl: urlToInclude,
+        loginId: userId,
+        password: passwordForEmail,
+      })
+        .then(async (result) => {
+          if (result?.ok) {
+            await env.DB.prepare(
+              "INSERT INTO email_notification_throttle (email, last_sent_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now')) ON CONFLICT(email) DO UPDATE SET last_sent_at=excluded.last_sent_at"
+            )
+              .bind(email)
+              .run();
+          }
+        })
+        .catch((e) => {
+          console.error("[email] notification failed:", e);
+        });
+      if (ctx && ctx.waitUntil) {
+        ctx.waitUntil(emailPromise);
+      } else {
+        void emailPromise;
+      }
     }
   }
 

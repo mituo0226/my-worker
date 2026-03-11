@@ -8,6 +8,7 @@
 wrangler d1 execute ai_chat_db --local --file database/migrations/0001_initial.sql
 wrangler d1 execute ai_chat_db --local --file database/migrations/0002_add_indexes.sql
 wrangler d1 execute ai_chat_db --local --file database/migrations/0003_user_passwords.sql
+wrangler d1 execute ai_chat_db --local --file database/migrations/0004_email_notification_throttle.sql
 ```
 
 ## Prod D1 に適用
@@ -16,6 +17,7 @@ wrangler d1 execute ai_chat_db --local --file database/migrations/0003_user_pass
 wrangler d1 execute ai_chat_db --remote --file database/migrations/0001_initial.sql
 wrangler d1 execute ai_chat_db --remote --file database/migrations/0002_add_indexes.sql
 wrangler d1 execute ai_chat_db --remote --file database/migrations/0003_user_passwords.sql
+wrangler d1 execute ai_chat_db --remote --file database/migrations/0004_email_notification_throttle.sql
 ```
 
 ## スキーマ取得（スナップショット作成用）
