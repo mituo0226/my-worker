@@ -19,11 +19,12 @@
 <!-- ========== ここから下を外部サイトのフリーページに貼り付ける ========== -->
 
 <style>
-html, body { margin: 0; padding: 0; height: 100%; background: #e5ddd5; }
-#ai-chat-root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; min-height: 100%; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom, 0); }
-.ai-chat-wrap { max-width: 420px; margin: 0 auto; width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; background: #e5ddd5; box-shadow: 0 0 12px rgba(0,0,0,0.15); }
+/* 全体をビューポート内に収め、会話が長くなっても入力欄は常に下端に固定・ログのみスクロール */
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #e5ddd5; }
+#ai-chat-root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; height: 100vh; height: 100dvh; max-height: 100%; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom, 0); overflow: hidden; }
+.ai-chat-wrap { max-width: 420px; margin: 0 auto; width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; background: #e5ddd5; box-shadow: 0 0 12px rgba(0,0,0,0.15); overflow: hidden; }
 .ai-chat-header { background: #07c755; color: #fff; padding: 14px 16px; font-size: 17px; font-weight: 600; flex-shrink: 0; }
-.ai-chat-log { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; -webkit-overflow-scrolling: touch; }
+.ai-chat-log { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; -webkit-overflow-scrolling: touch; }
 .ai-chat-msg { max-width: 78%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
 .ai-chat-msg.assistant { align-self: flex-start; background: #fff; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 .ai-chat-msg.user { align-self: flex-end; background: #95ec69; color: #333; border-bottom-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
@@ -55,7 +56,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: #e5ddd5; }
 @keyframes ai-chat-typing-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
 /* スマホ下部: 入力エリアと同じ背景で safe area まで塗り、あなたのID を表示して余白を意味ある領域に */
 .ai-chat-footer { flex-shrink: 0; padding: 6px 12px 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0)); background: #f7f7f7; font-size: 11px; color: #888; text-align: center; }
-@media (min-width: 421px) { .ai-chat-wrap { min-height: 600px; height: 600px; } .ai-chat-footer { padding-bottom: 12px; } }
+@media (min-width: 421px) { .ai-chat-wrap { min-height: 400px; } .ai-chat-footer { padding-bottom: 12px; } }
 </style>
 
 <div id="ai-chat-root"></div>

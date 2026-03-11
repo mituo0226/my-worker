@@ -1,8 +1,7 @@
-fix(embed): スマホのフッター余白を解消し「あなたのID」を表示
+fix(embed): PC・スマホで入力欄を下端に固定し会話ログのみスクロール
 
-- スマホ下部の余白（safe area や透明に見える領域）を解消
-  - viewport-fit=cover と env(safe-area-inset-bottom) でレイアウトを下端まで拡張
-  - html/body/#ai-chat-root の高さ・背景を統一し隙間が出ないように調整
-- フッターに「あなたのID: 〇〇〇〇〇〇…」を表示
-  - システム用のユーザー情報をユーザーにも分かる形で表示し、余白を意味ある領域に
-  - 入力エリアと同じ背景で safe area まで塗りつぶし
+- 会話が長くなってもブラウザ下にはみ出さないようにビューポート高さで固定
+  - #ai-chat-root を height: 100vh / 100dvh、overflow: hidden に変更
+  - html/body に overflow: hidden でページ全体のスクロールを防止
+- ログ領域に min-height: 0 を指定し flex 内で正しくスクロールするように修正
+- PC は 600px 固定をやめビューポートに合わせて伸縮（min-height: 400px）
