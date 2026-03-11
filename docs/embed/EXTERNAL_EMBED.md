@@ -31,6 +31,7 @@
 - `[[UPASS]]` … パスワード（あれば・チャット画面上に表示）
 - `[[UNAME]]` … 外部のユーザー名・ニックネーム（あれば）
 - `[[UADDRESS]]` … ユーザーのメールアドレス（あれば・通知用）
+- `[[UPHOTO]]` … キャラクター画像のURL（あれば・チャット上部に表示。http/https のみ）
 
 置換されない場合は localStorage や `window.CURRENT_USERNAME` などにフォールバック。email は空になる。
 

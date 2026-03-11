@@ -13,6 +13,7 @@
   [[UNAME]]   … 表示名（ニックネーム）
   [[UADDRESS]]… メールアドレス（通知送信先）
   [[UPASS]]   … パスワード（通知メールに表示・ログイン用。未設定ならURLに ?upass=xxx を付与しても可）
+  [[UPHOTO]]  … キャラクター画像のURL（チャット上部に表示）
   ※置換しない場合はそのまま [[UID]] 等の文字列が残り、ID/メール/パスワードは使われません。
 -->
 <!-- ========== ここから下を外部サイトのフリーページに貼り付ける ========== -->
@@ -42,6 +43,13 @@
 .ai-chat-bookmark-detail summary { cursor: pointer; }
 .ai-chat-bookmark-link { padding: 6px 12px; font-size: 12px; color: #07c755; cursor: pointer; text-decoration: underline; flex-shrink: 0; }
 .ai-chat-bookmark-link:hover { opacity: 0.8; }
+.ai-chat-photo { width: 100%; max-height: 160px; object-fit: cover; object-position: center top; flex-shrink: 0; display: block; }
+.ai-chat-typing-wrap { align-self: flex-start; }
+.ai-chat-typing-dots { display: inline-flex; gap: 2px; padding: 4px 0; }
+.ai-chat-typing-dots span { animation: ai-chat-typing-bounce 0.6s ease-in-out infinite both; }
+.ai-chat-typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.ai-chat-typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ai-chat-typing-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
 @media (min-width: 421px) { .ai-chat-wrap { min-height: 600px; height: 600px; } }
 </style>
 
@@ -63,11 +71,13 @@
   const externalUname = ("[[UNAME]]" || "").toString().trim();
   const externalUaddress = ("[[UADDRESS]]" || "").toString().trim();
   const externalUpass = ("[[UPASS]]" || "").toString().trim();
+  const externalUphoto = ("[[UPHOTO]]" || "").toString().trim();
 
   const hasExternalUid = externalUid && !externalUid.includes("[[");
   const hasExternalUname = externalUname && !externalUname.includes("[[");
   const hasExternalUaddress = externalUaddress && !externalUaddress.includes("[[");
   const hasExternalUpass = externalUpass && !externalUpass.includes("[[");
+  const hasExternalUphoto = externalUphoto && !externalUphoto.includes("[[") && /^https?:\/\//i.test(externalUphoto);
 
   const email = hasExternalUaddress ? externalUaddress : "";
 
@@ -144,8 +154,18 @@
     if (el) el.style.display = "none";
   };
 
+  function escapeAttr(s) {
+    if (!s || typeof s !== "string") return "";
+    return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
+  const photoHtml = hasExternalUphoto
+    ? "<img class=\"ai-chat-photo\" src=\"" + escapeAttr(externalUphoto) + "\" alt=\"\" />"
+    : "";
+
   root.innerHTML = `
     <div class="ai-chat-wrap">
+      ` + photoHtml + `
       <div class="ai-chat-header">佐藤淳也</div>
       <div id="bookmark-link" class="ai-chat-bookmark-link">ブックマークしてない人はこちら</div>
       <div id="bookmark-guide" class="ai-chat-bookmark" style="display:none;">
@@ -194,6 +214,18 @@
     history.push({ role, content: text });
   }
 
+  function showTyping() {
+    const wrap = document.createElement("div");
+    wrap.id = "typing-indicator";
+    wrap.className = "ai-chat-msg assistant ai-chat-typing-wrap";
+    wrap.innerHTML = '<span class="ai-chat-typing-dots"><span>.</span><span>.</span><span>.</span></span>';
+    logEl.appendChild(wrap);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function hideTyping() {
+    document.getElementById("typing-indicator")?.remove();
+  }
+
   function showWarn(msg) {
     warnEl.textContent = msg;
     warnEl.style.display = msg ? "block" : "none";
@@ -207,6 +239,7 @@
     addLine("user", text);
     msgEl.value = "";
     sendEl.disabled = true;
+    showTyping();
 
     try {
       const res = await fetch(API_URL, {
@@ -227,11 +260,13 @@
       try { data = JSON.parse(raw); } catch {}
 
       if (!res.ok) {
+        hideTyping();
         showWarn("APIエラー: " + res.status + " " + raw.slice(0, 200));
         addLine("assistant", "サーバー側でエラーが出たみたい。少し待ってもう一度送ってみて");
         return;
       }
 
+      hideTyping();
       addLine(
         "assistant",
         (data && data.reply)
@@ -240,6 +275,7 @@
       );
 
     } catch (e) {
+      hideTyping();
       showWarn("通信エラー: " + String(e));
       addLine("assistant", "通信エラーが出たみたい。しばらくしてからもう一度送ってみて");
     } finally {

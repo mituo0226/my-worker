@@ -36,13 +36,19 @@ export async function handleChat(req, env, ctx) {
 
   const ab = await getAB(env, userId);
 
-  const rows = await env.DB.prepare(
-    "SELECT role, content FROM chat_messages WHERE user_id=? ORDER BY turn_index DESC LIMIT 5"
-  ).bind(userId).all();
+  const [rows, turnRow] = await Promise.all([
+    env.DB.prepare(
+      "SELECT role, content FROM chat_messages WHERE user_id=? ORDER BY turn_index DESC LIMIT 5"
+    ).bind(userId).all(),
+    env.DB.prepare(
+      "SELECT COUNT(*) as c FROM chat_messages WHERE user_id=? AND role='assistant'"
+    ).bind(userId).first(),
+  ]);
 
   const history = (rows.results || []).reverse();
+  const turnCount = Math.max(1, Number(turnRow?.c ?? 0) + 1);
 
-  const messages = buildMessages({ history, userMessage: message, nickname });
+  const messages = buildMessages({ history, userMessage: message, nickname, turnCount });
   messages.unshift({ role: "system", content: buildTimeContextTokyo() });
 
   let reply = "";

@@ -19,9 +19,14 @@ export async function handleGreeting(req, env) {
 
   if (!userId) return json({ ok: true, greeting: STATIC_GREETING }, 200, env);
 
-  const rows = await env.DB.prepare(
-    "SELECT role, content FROM chat_messages WHERE user_id=? ORDER BY turn_index DESC LIMIT 6"
-  ).bind(userId).all();
+  const [rows, turnRow] = await Promise.all([
+    env.DB.prepare(
+      "SELECT role, content FROM chat_messages WHERE user_id=? ORDER BY turn_index DESC LIMIT 6"
+    ).bind(userId).all(),
+    env.DB.prepare(
+      "SELECT COUNT(*) as c FROM chat_messages WHERE user_id=? AND role='assistant'"
+    ).bind(userId).first(),
+  ]);
 
   const history = (rows.results || []).reverse();
 
@@ -30,7 +35,8 @@ export async function handleGreeting(req, env) {
   }
 
   const ab = await getAB(env, userId);
-  const system = getSystemPrompt({ nickname });
+  const turnCount = Math.max(1, Number(turnRow?.c ?? 0) + 1);
+  const system = getSystemPrompt({ nickname, turnCount });
 
   const greetingPrompt = `あなたは佐藤淳也。このユーザーとは過去に会話している。
 直近の会話を踏まえ、再訪した相手への挨拶を1文（50〜80字）で出力して。
