@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>チャット埋め込み用（body以下をコピー）</title>
 </head>
 <body>
@@ -19,8 +19,9 @@
 <!-- ========== ここから下を外部サイトのフリーページに貼り付ける ========== -->
 
 <style>
-#ai-chat-root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; }
-.ai-chat-wrap { max-width: 420px; margin: 0 auto; height: 100%; min-height: 500px; display: flex; flex-direction: column; background: #e5ddd5; box-shadow: 0 0 12px rgba(0,0,0,0.15); }
+html, body { margin: 0; padding: 0; height: 100%; background: #e5ddd5; }
+#ai-chat-root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; min-height: 100%; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom, 0); }
+.ai-chat-wrap { max-width: 420px; margin: 0 auto; width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; background: #e5ddd5; box-shadow: 0 0 12px rgba(0,0,0,0.15); }
 .ai-chat-header { background: #07c755; color: #fff; padding: 14px 16px; font-size: 17px; font-weight: 600; flex-shrink: 0; }
 .ai-chat-log { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; -webkit-overflow-scrolling: touch; }
 .ai-chat-msg { max-width: 78%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
@@ -52,7 +53,9 @@
 .ai-chat-typing-dots span:nth-child(2) { animation-delay: 0.15s; }
 .ai-chat-typing-dots span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes ai-chat-typing-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
-@media (min-width: 421px) { .ai-chat-wrap { min-height: 600px; height: 600px; } }
+/* スマホ下部: 入力エリアと同じ背景で safe area まで塗り、あなたのID を表示して余白を意味ある領域に */
+.ai-chat-footer { flex-shrink: 0; padding: 6px 12px 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0)); background: #f7f7f7; font-size: 11px; color: #888; text-align: center; }
+@media (min-width: 421px) { .ai-chat-wrap { min-height: 600px; height: 600px; } .ai-chat-footer { padding-bottom: 12px; } }
 </style>
 
 <div id="ai-chat-root"></div>
@@ -195,6 +198,7 @@
         <textarea id="msg" class="ai-chat-input" rows="1" placeholder="メッセージ" enterkeyhint="send"></textarea>
         <button id="send" class="ai-chat-send" aria-label="送信">➤</button>
       </div>
+      <div id="ai-chat-footer" class="ai-chat-footer" aria-hidden="true"></div>
       <div id="dbg" class="ai-chat-dbg" aria-hidden="true"></div>
     </div>
   `;
@@ -204,6 +208,14 @@
   const sendEl = document.getElementById("send");
   const warnEl = document.getElementById("warn");
   const dbgEl = document.getElementById("dbg");
+  const footerEl = document.getElementById("ai-chat-footer");
+
+  /* フッターに「あなたのID」を表示し、下部の余白を意味ある情報領域にする（スマホで隙間に見えないように） */
+  if (footerEl && userId) {
+    var shortId = userId.length > 10 ? userId.slice(0, 10) + "…" : userId;
+    footerEl.textContent = "あなたのID: " + shortId;
+    footerEl.removeAttribute("aria-hidden");
+  }
 
   /** 入力欄の高さを内容に合わせて伸縮（スマホで縦に広がる）。最小48px・最大120px。 */
   function resizeMsgInput() {
